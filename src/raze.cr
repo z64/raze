@@ -1,7 +1,6 @@
 require "http"
 require "json"
 require "uri"
-require "tempfile"
 require "radix"
 
 require "./raze/*"
@@ -44,10 +43,12 @@ module Raze
       tls_context = OpenSSL::SSL::Context::Server.new
       tls_context.private_key = config.tls_key.as(String)
       tls_context.certificate_chain = config.tls_cert.as(String)
-      server.tls = tls_context
+      server.bind_tls(config.host, config.port, tls_context, config.reuse_port)
+    else
+      server.bind_tcp(config.host, config.port, config.reuse_port)
     end
 
     puts "\nlistening at localhost:" + config.port.to_s if config.logging
-    server.listen(config.host, config.port, config.reuse_port)
+    server.listen
   end
 end
